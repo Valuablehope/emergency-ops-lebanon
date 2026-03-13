@@ -28,7 +28,7 @@ const NAV_ITEMS = [
   { label: "Shelters", icon: Home, path: "/shelters" },
   { label: "Distributions", icon: Package, path: "/distributions" },
   { label: "Health", icon: Stethoscope, path: "/health" },
-  { label: "Protection", icon: Shield, path: "/protection" },
+  { label: "MMUs", icon: Activity, path: "/mmus" },
   { label: "Danger Zones", icon: AlertTriangle, path: "/danger-zones" },
   { label: "Admin - Master Data", icon: Settings, path: "/admin" },
   { label: "Admin - Users", icon: Users, path: "/admin/users" },

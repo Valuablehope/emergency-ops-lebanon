@@ -39,7 +39,7 @@ export default defineSchema({
   facilities: defineTable({
     code: v.string(),
     name: v.string(),
-    type: v.string(), // "PHCC", "Hospital", "Shelter", "CMR", "PSU"
+    type: v.string(), // "PHCC", "Hospital", "Shelter", "CMR", "MMU"
     subType: v.string(),
     partnerId: v.id("partners"),
     governorateId: v.id("governorates"),
@@ -95,4 +95,15 @@ export default defineSchema({
     details: v.string(),
     timestamp: v.number(),
   }),
+
+  mmu_updates: defineTable({
+    facilityId: v.id("facilities"),
+    reportingUser: v.id("users"),
+    caseManagement: v.boolean(),
+    pssActivities: v.boolean(),
+    capacity: v.number(),
+    currentCases: v.number(),
+    outreachTeams: v.number(),
+    timestamp: v.number(),
+  }).index("by_facility", ["facilityId"]),
 });

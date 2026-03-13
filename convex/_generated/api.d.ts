@@ -13,6 +13,7 @@ import type * as facilities from "../facilities.js";
 import type * as health from "../health.js";
 import type * as mapping from "../mapping.js";
 import type * as masterData from "../masterData.js";
+import type * as mmus from "../mmus.js";
 import type * as shelters from "../shelters.js";
 import type * as users from "../users.js";
 
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   health: typeof health;
   mapping: typeof mapping;
   masterData: typeof masterData;
+  mmus: typeof mmus;
   shelters: typeof shelters;
   users: typeof users;
 }>;

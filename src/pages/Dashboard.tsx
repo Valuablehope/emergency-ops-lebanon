@@ -118,7 +118,7 @@ export default function Dashboard() {
                     data={[
                       { name: "Shelters", value: facilities?.filter((f: any) => f.type === "Shelter").length || 0 },
                       { name: "Health", value: facilities?.filter((f: any) => f.type === "PHCC" || f.type === "Hospital").length || 0 },
-                      { name: "Protection", value: facilities?.filter((f: any) => f.type === "PSU").length || 0 },
+                      { name: "MMUs", value: facilities?.filter((f: any) => f.type === "MMU").length || 0 },
                     ]}
                     cx="50%"
                     cy="50%"

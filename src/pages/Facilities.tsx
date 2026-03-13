@@ -203,7 +203,7 @@ export default function Facilities() {
                     <SelectItem value="PHCC">PHCC</SelectItem>
                     <SelectItem value="Hospital">Hospital</SelectItem>
                     <SelectItem value="CMR">CMR Facility</SelectItem>
-                    <SelectItem value="PSU">Protection Support Unit</SelectItem>
+                    <SelectItem value="MMU">Medical Mobile Unit (MMU)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

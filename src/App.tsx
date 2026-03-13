@@ -5,7 +5,7 @@ import Facilities from "./pages/Facilities";
 import Shelters from "./pages/Shelters";
 import Distributions from "./pages/Distributions";
 import Health from "./pages/Health";
-import Protection from "./pages/Protection";
+import MMUs from "./pages/MMUs";
 import MapView from "./pages/MapView";
 import Dashboard from "./pages/Dashboard";
 import UserManagement from "./pages/admin/UserManagement";
@@ -25,7 +25,7 @@ function App() {
           <Route path="distributions" element={<Distributions />} />
           <Route path="health" element={<Health />} />
 
-          <Route path="protection" element={<Protection />} />
+          <Route path="mmus" element={<MMUs />} />
 
           <Route path="danger-zones" element={<DangerZones />} />
           <Route path="admin" element={<MasterData />} />

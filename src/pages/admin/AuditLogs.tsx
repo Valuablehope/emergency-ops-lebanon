@@ -1,11 +1,9 @@
-import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Shield, Clock, User, Activity } from "lucide-react";
+import { Clock, User, Activity } from "lucide-react";
 
 export default function AuditLogs() {
-  const logs = useQuery(api.health.getHealthStats); // Placeholder for a real audit log query
+  // Placeholder for a real audit log query: useQuery(api.health.getHealthStats)
 
   return (
     <div className="space-y-6">

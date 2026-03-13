@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Map as MapIcon, Users, Landmark } from "lucide-react";
-import { Id } from "../../../convex/_generated/dataModel";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 export default function MasterData() {
   const governorates = useQuery(api.masterData.getGovernorates);

@@ -44,10 +44,12 @@ export default defineSchema({
     partnerId: v.id("partners"),
     governorateId: v.id("governorates"),
     districtId: v.id("districts"),
-    municipalityId: v.id("municipalities"),
+    municipalityId: v.optional(v.id("municipalities")),
     lat: v.number(),
     lng: v.number(),
     status: v.string(), // "active", "inactive", "closed"
+    sectors: v.optional(v.array(v.string())), // "WASH", "Health", "Protection", etc.
+    specialties: v.optional(v.array(v.string())), // Medical specialties like "Pediatrics", "Trauma"
     updatedAt: v.number(),
   }).index("by_type", ["type"]).index("by_gov", ["governorateId"]),
 

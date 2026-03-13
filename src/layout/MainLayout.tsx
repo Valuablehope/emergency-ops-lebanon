@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { 
   BarChart3, 
   Map as MapIcon, 
@@ -11,9 +11,15 @@ import {
   AlertTriangle,
   Menu,
   Users,
-  Activity
+  Activity,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { QuickEntryDialog } from "@/components/QuickEntryDialog";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { exportPlatformData } from "@/lib/exportUtils";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: BarChart3, path: "/" },
@@ -30,6 +36,16 @@ const NAV_ITEMS = [
 ];
 
 export default function MainLayout() {
+  const location = useLocation();
+  const facilities = useQuery(api.facilities.getFacilities, {});
+  const shelterUpdates = useQuery(api.shelters.getLatestShelterUpdates);
+  const distributions = useQuery(api.distributions.getDistributions);
+
+  const handleExport = async () => {
+    if (!facilities) return;
+    await exportPlatformData(facilities, shelterUpdates, distributions);
+  };
+
   return (
     <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950">
       {/* Sidebar */}
@@ -42,14 +58,20 @@ export default function MainLayout() {
         </div>
         <nav className="flex-1 space-y-1 p-4">
           {NAV_ITEMS.map((item) => (
-            <Link
+            <NavLink
               key={item.path}
               to={item.path}
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              end={item.path === "/"}
+              className={({ isActive }) => cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                isActive 
+                  ? "bg-primary/10 text-primary shadow-sm" 
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className={cn("h-4 w-4", location.pathname === item.path && "text-primary")} />
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
         <div className="border-t p-4">
@@ -75,8 +97,17 @@ export default function MainLayout() {
             <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Lebanon National Operations Platform</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">Export Data</Button>
-            <Button size="sm">New Entry</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExport}
+              disabled={!facilities}
+            >
+              <Download className="mr-2 h-4 w-4" /> Export Data
+            </Button>
+            <QuickEntryDialog trigger={
+              <Button size="sm">New Entry</Button>
+            } />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">

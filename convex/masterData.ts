@@ -83,9 +83,13 @@ export const addMunicipality = mutation({
 // Seed initial data
 export const seed = mutation({
   handler: async (ctx) => {
-    // Check if data already exists
-    const existingGov = await ctx.db.query("governorates").first();
-    if (existingGov) return "Already seeded";
+    // Clear existing to avoid duplicates
+    const oldGovs = await ctx.db.query("governorates").collect();
+    for (const og of oldGovs) await ctx.db.delete(og._id);
+    const oldDistricts = await ctx.db.query("districts").collect();
+    for (const od of oldDistricts) await ctx.db.delete(od._id);
+    const oldPartners = await ctx.db.query("partners").collect();
+    for (const op of oldPartners) await ctx.db.delete(op._id);
 
     const govs = [
       { nameEn: "Beirut", nameAr: "بيروت", code: "BEI" },
@@ -103,6 +107,51 @@ export const seed = mutation({
       govIds[g.code] = await ctx.db.insert("governorates", g);
     }
 
+    const districts = [
+      { gov: "BEI", nameEn: "Beirut", nameAr: "بيروت", code: "BEI" },
+      // Mount Lebanon
+      { gov: "ML", nameEn: "Baabda", nameAr: "بعبدا", code: "BAA" },
+      { gov: "ML", nameEn: "Matn", nameAr: "المتن", code: "MAT" },
+      { gov: "ML", nameEn: "Shouf", nameAr: "الشوف", code: "SHO" },
+      { gov: "ML", nameEn: "Aley", nameAr: "عاليه", code: "ALE" },
+      { gov: "ML", nameEn: "Keserwan", nameAr: "كسروان", code: "KES" },
+      { gov: "ML", nameEn: "Jbeil", nameAr: "جبيل", code: "JBE" },
+      // North
+      { gov: "NOR", nameEn: "Tripoli", nameAr: "طرابلس", code: "TRI" },
+      { gov: "NOR", nameEn: "Koura", nameAr: "الكورة", code: "KOU" },
+      { gov: "NOR", nameEn: "Zgharta", nameAr: "زغرتا", code: "ZGH" },
+      { gov: "NOR", nameEn: "Batroun", nameAr: "البترون", code: "BAT" },
+      { gov: "NOR", nameEn: "Bsharri", nameAr: "بشري", code: "BSH" },
+      { gov: "NOR", nameEn: "Minieh-Danniyeh", nameAr: "المنية - الضنية", code: "MIN" },
+      // Akkar
+      { gov: "AKK", nameEn: "Akkar", nameAr: "عكار", code: "AKK" },
+      // Bekaa
+      { gov: "BEK", nameEn: "Zahle", nameAr: "زحلة", code: "ZAH" },
+      { gov: "BEK", nameEn: "West Bekaa", nameAr: "البقاع الغربي", code: "WBE" },
+      { gov: "BEK", nameEn: "Rashaya", nameAr: "راشيا", code: "RAS" },
+      // Baalbek-Hermel
+      { gov: "BH", nameEn: "Baalbek", nameAr: "بعلبك", code: "BAA_BH" },
+      { gov: "BH", nameEn: "Hermel", nameAr: "الهرمل", code: "HER" },
+      // South
+      { gov: "SOU", nameEn: "Sidon", nameAr: "صيدا", code: "SID" },
+      { gov: "SOU", nameEn: "Tyre", nameAr: "صور", code: "TYR" },
+      { gov: "SOU", nameEn: "Jezzine", nameAr: "جزين", code: "JEZ" },
+      // El Nabatieh
+      { gov: "NAB", nameEn: "Nabatieh", nameAr: "النبطية", code: "NAB_DIST" },
+      { gov: "NAB", nameEn: "Marjeyoun", nameAr: "مرجعيون", code: "MAR" },
+      { gov: "NAB", nameEn: "Hasbaya", nameAr: "حاصبيا", code: "HAS" },
+      { gov: "NAB", nameEn: "Bint Jbeil", nameAr: "بنت جبيل", code: "BIN" },
+    ];
+
+    for (const d of districts) {
+      await ctx.db.insert("districts", {
+        governorateId: govIds[d.gov],
+        nameEn: d.nameEn,
+        nameAr: d.nameAr,
+        code: d.code
+      });
+    }
+
     const partners = [
       { name: "Lebanese Red Cross", acronym: "LRC", type: "Gov" },
       { name: "UNHCR Lebanon", acronym: "UNHCR", type: "UN" },
@@ -115,6 +164,14 @@ export const seed = mutation({
       await ctx.db.insert("partners", p);
     }
 
-    return "Seeding completed successfully";
+    // Default Admin User
+    await ctx.db.insert("users", {
+      name: "John Doe",
+      email: "john@emergency-ops.lb",
+      role: "admin",
+      status: "active"
+    });
+
+    return "Seeding completed successfully with Governorates, Districts, Partners, and Admin User";
   },
 });

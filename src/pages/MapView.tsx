@@ -1,16 +1,42 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Layers, AlertTriangle, Crosshair } from "lucide-react";
+import { 
+  Layers as LayersIcon, 
+  AlertTriangle, 
+  Crosshair, 
+  CheckCircle2, 
+  Circle,
+  Building2
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+const INITIAL_CENTER: [number, number] = [35.5018, 33.8938]; // Beirut
+const INITIAL_ZOOM = 8;
 
 export default function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
+  
   const facilities = useQuery(api.facilities.getFacilities, {});
+  const dangerZones = useQuery(api.mapping.getDangerZones);
+
+  const [layers, setLayers] = useState({
+    facilities: true,
+    dangerZones: true,
+  });
 
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -18,8 +44,8 @@ export default function MapView() {
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: "https://demotiles.maplibre.org/style.json",
-      center: [35.5018, 33.8938], // Beirut
-      zoom: 8,
+      center: INITIAL_CENTER,
+      zoom: INITIAL_ZOOM,
     });
 
     map.current.addControl(new maplibregl.NavigationControl(), "top-right");
@@ -30,25 +56,80 @@ export default function MapView() {
     };
   }, []);
 
+  // Update Markers
   useEffect(() => {
-    if (!map.current || !facilities) return;
+    if (!map.current) return;
 
-    // Add markers for facilities
-    facilities.forEach((f: any) => {
-      const el = document.createElement("div");
-      el.className = "marker";
-      el.style.backgroundColor = f.type === "Shelter" ? "#3b82f6" : f.type === "PHCC" ? "#10b981" : "#ef4444";
-      el.style.width = "12px";
-      el.style.height = "12px";
-      el.style.borderRadius = "50%";
-      el.style.border = "2px solid white";
+    // Clear existing markers
+    markersRef.current.forEach(m => m.remove());
+    markersRef.current = [];
 
-      new maplibregl.Marker(el)
-        .setLngLat([f.lng, f.lat])
-        .setPopup(new maplibregl.Popup().setHTML(`<strong>${f.name}</strong><br/>${f.type}`))
-        .addTo(map.current!);
+    if (layers.facilities && facilities) {
+      facilities.forEach((f: any) => {
+        const el = document.createElement("div");
+        el.className = "marker";
+        el.style.backgroundColor = f.type === "Shelter" ? "#3b82f6" : f.type === "PHCC" ? "#10b981" : "#ef4444";
+        el.style.width = "12px";
+        el.style.height = "12px";
+        el.style.borderRadius = "50%";
+        el.style.border = "2px solid white";
+        el.style.cursor = "pointer";
+
+        const marker = new maplibregl.Marker(el)
+          .setLngLat([f.lng, f.lat])
+          .setPopup(new maplibregl.Popup({ offset: 10 }).setHTML(`
+            <div class="p-2">
+              <h3 class="font-bold text-sm">${f.name}</h3>
+              <p class="text-xs text-slate-500">${f.type} • ${f.status}</p>
+            </div>
+          `))
+          .addTo(map.current!);
+        
+        markersRef.current.push(marker);
+      });
+    }
+
+    // Add Danger Zones as Markers for now (simpler than GeoJSON layers for this MVP)
+    if (layers.dangerZones && dangerZones) {
+      dangerZones.forEach((z: any) => {
+        // Only if it has geometry coordinates in [lng, lat] format
+        if (z.geometry && z.geometry.coordinates && z.geometry.coordinates.length > 0) {
+          const coords = z.geometry.coordinates[0]; // Assuming first point for marker
+          if (Array.isArray(coords)) {
+            const el = document.createElement("div");
+            el.className = "danger-marker";
+            el.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
+            el.style.width = "40px";
+            el.style.height = "40px";
+            el.style.borderRadius = "50%";
+            el.style.border = "2px solid #ef4444";
+            el.style.display = "flex";
+            el.style.alignItems = "center";
+            el.style.justifyContent = "center";
+
+            const marker = new maplibregl.Marker(el)
+              .setLngLat([coords[0], coords[1]])
+              .setPopup(new maplibregl.Popup().setHTML(`<strong>${z.name}</strong><br/>Risk: ${z.riskLevel}`))
+              .addTo(map.current!);
+            
+            markersRef.current.push(marker);
+          }
+        }
+      });
+    }
+  }, [facilities, dangerZones, layers]);
+
+  const handleRecenter = () => {
+    map.current?.flyTo({
+      center: INITIAL_CENTER,
+      zoom: INITIAL_ZOOM,
+      essential: true
     });
-  }, [facilities]);
+  };
+
+  const toggleLayer = (key: keyof typeof layers) => {
+    setLayers(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   return (
     <div className="flex h-[calc(100vh-160px)] flex-col gap-4">
@@ -58,8 +139,40 @@ export default function MapView() {
           <p className="text-muted-foreground">National operational view with facilities and active danger zones.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm"><Layers className="mr-2 h-4 w-4" /> Layers</Button>
-          <Button size="sm"><Crosshair className="mr-2 h-4 w-4" /> Recenter</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm"><LayersIcon className="mr-2 h-4 w-4" /> Layers</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-xs">
+              <DialogHeader>
+                <DialogTitle>Map Layers</DialogTitle>
+                <DialogDescription>Toggle visibility of map features.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between" 
+                  onClick={() => toggleLayer('facilities')}
+                >
+                  <span className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4" /> Facilities
+                  </span>
+                  {layers.facilities ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-slate-300" />}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between" 
+                  onClick={() => toggleLayer('dangerZones')}
+                >
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-red-500" /> Danger Zones
+                  </span>
+                  {layers.dangerZones ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-slate-300" />}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button size="sm" onClick={handleRecenter}><Crosshair className="mr-2 h-4 w-4" /> Recenter</Button>
         </div>
       </div>
 

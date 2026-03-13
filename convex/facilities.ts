@@ -41,10 +41,12 @@ export const createFacility = mutation({
     partnerId: v.id("partners"),
     governorateId: v.id("governorates"),
     districtId: v.id("districts"),
-    municipalityId: v.id("municipalities"),
+    municipalityId: v.optional(v.id("municipalities")),
     lat: v.number(),
     lng: v.number(),
     status: v.string(),
+    sectors: v.optional(v.array(v.string())),
+    specialties: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("facilities", {
@@ -57,10 +59,19 @@ export const createFacility = mutation({
 export const updateFacility = mutation({
   args: {
     id: v.id("facilities"),
+    code: v.optional(v.string()),
     name: v.optional(v.string()),
-    status: v.optional(v.string()),
+    type: v.optional(v.string()),
+    subType: v.optional(v.string()),
+    partnerId: v.optional(v.id("partners")),
+    governorateId: v.optional(v.id("governorates")),
+    districtId: v.optional(v.id("districts")),
+    municipalityId: v.optional(v.id("municipalities")),
     lat: v.optional(v.number()),
     lng: v.optional(v.number()),
+    status: v.optional(v.string()),
+    sectors: v.optional(v.array(v.string())),
+    specialties: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -68,5 +79,31 @@ export const updateFacility = mutation({
       ...updates,
       updatedAt: Date.now(),
     });
+  },
+});
+
+export const deleteFacility = mutation({
+  args: { id: v.id("facilities") },
+  handler: async (ctx, args) => {
+    // Check for dependent data (e.g. shelter updates)
+    const updates = await ctx.db
+      .query("shelter_updates")
+      .withIndex("by_facility", (q) => q.eq("facilityId", args.id))
+      .collect();
+    
+    for (const update of updates) {
+      await ctx.db.delete(update._id);
+    }
+
+    const distributions = await ctx.db
+      .query("distributions")
+      .filter(q => q.eq(q.field("facilityId"), args.id))
+      .collect();
+
+    for (const d of distributions) {
+      await ctx.db.delete(d._id);
+    }
+
+    await ctx.db.delete(args.id);
   },
 });

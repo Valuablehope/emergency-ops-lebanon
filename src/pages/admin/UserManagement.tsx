@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users, UserPlus, Shield, Mail, MapPin } from "lucide-react";
+import { UserPlus, Shield, Mail, MapPin } from "lucide-react";
 
 export default function UserManagement() {
   const users = useQuery(api.users.getUsers);
@@ -85,7 +85,7 @@ export default function UserManagement() {
                   <SelectTrigger><SelectValue placeholder="All Areas" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Governorates</SelectItem>
-                    {governorates?.map(g => (
+                    {governorates?.map((g: any) => (
                       <SelectItem key={g._id} value={g._id}>{g.nameEn}</SelectItem>
                     ))}
                   </SelectContent>
@@ -112,7 +112,7 @@ export default function UserManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users?.map((user) => (
+              {users?.map((user: any) => (
                 <TableRow key={user._id}>
                   <TableCell>
                     <div className="flex flex-col">
@@ -132,7 +132,7 @@ export default function UserManagement() {
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4 text-slate-400" />
                       {user.areaId === "all" || !user.areaId ? "National" : 
-                        governorates?.find(g => g._id === user.areaId)?.nameEn || "Specific Area"
+                        governorates?.find((g: any) => g._id === user.areaId)?.nameEn || "Specific Area"
                       }
                     </div>
                   </TableCell>

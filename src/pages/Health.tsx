@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Stethoscope, Activity, Heart, AlertCircle } from "lucide-react";
@@ -8,7 +8,7 @@ export default function Health() {
   const stats = useQuery(api.health.getHealthStats);
   const healthFacilities = useQuery(api.facilities.getFacilities, {}); // Filter in component or backend
 
-  const filtered = healthFacilities?.filter(f => f.type === "PHCC" || f.type === "Hospital");
+  const filtered = healthFacilities?.filter((f: any) => f.type === "PHCC" || f.type === "Hospital");
 
   return (
     <div className="space-y-6">
@@ -46,18 +46,22 @@ export default function Health() {
             <Heart className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">92% coverage</p>
+            <div className="text-2xl font-bold">
+              {healthFacilities?.filter((f: any) => f.type === "CMR").length || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">National coverage</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">High Alert Area</CardTitle>
+            <CardTitle className="text-sm font-medium">Monitoring Governorates</CardTitle>
             <AlertCircle className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">South</div>
-            <p className="text-xs text-muted-foreground">4 facilities offline</p>
+            <div className="text-2xl font-bold">
+              {[...new Set(healthFacilities?.map((f: any) => f.governorateId))].length}
+            </div>
+            <p className="text-xs text-muted-foreground">Reporting online</p>
           </CardContent>
         </Card>
       </div>
@@ -78,7 +82,7 @@ export default function Health() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered?.map((f) => (
+              {filtered?.map((f: any) => (
                 <TableRow key={f._id}>
                   <TableCell className="font-medium">{f.name}</TableCell>
                   <TableCell>{f.type}</TableCell>

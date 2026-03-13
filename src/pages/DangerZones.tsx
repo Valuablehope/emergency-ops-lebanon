@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, Plus, ShieldAlert, History } from "lucide-react";
+import { AlertTriangle, Plus, History } from "lucide-react";
 
 export default function DangerZones() {
   const zones = useQuery(api.mapping.getDangerZones);
@@ -101,7 +101,7 @@ export default function DangerZones() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {zones?.map((zone) => (
+                {zones?.map((zone: any) => (
                   <TableRow key={zone._id}>
                     <TableCell className="font-medium">{zone.name}</TableCell>
                     <TableCell>

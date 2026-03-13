@@ -7,15 +7,21 @@ export const getFacilities = query({
     governorateId: v.optional(v.id("governorates")),
   },
   handler: async (ctx, args) => {
-    let q = ctx.db.query("facilities");
-    
     if (args.type) {
-      q = q.withIndex("by_type", (q) => q.eq("type", args.type!));
-    } else if (args.governorateId) {
-      q = q.withIndex("by_gov", (q) => q.eq("governorateId", args.governorateId!));
+      return await ctx.db
+        .query("facilities")
+        .withIndex("by_type", (q) => q.eq("type", args.type!))
+        .collect();
     }
     
-    return await q.collect();
+    if (args.governorateId) {
+      return await ctx.db
+        .query("facilities")
+        .withIndex("by_gov", (q) => q.eq("governorateId", args.governorateId!))
+        .collect();
+    }
+    
+    return await ctx.db.query("facilities").collect();
   },
 });
 

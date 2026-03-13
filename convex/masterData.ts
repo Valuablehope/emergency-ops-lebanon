@@ -80,3 +80,41 @@ export const addMunicipality = mutation({
     return await ctx.db.insert("municipalities", args);
   },
 });
+// Seed initial data
+export const seed = mutation({
+  handler: async (ctx) => {
+    // Check if data already exists
+    const existingGov = await ctx.db.query("governorates").first();
+    if (existingGov) return "Already seeded";
+
+    const govs = [
+      { nameEn: "Beirut", nameAr: "بيروت", code: "BEI" },
+      { nameEn: "Mount Lebanon", nameAr: "جبل لبنان", code: "ML" },
+      { nameEn: "North", nameAr: "الشمال", code: "NOR" },
+      { nameEn: "Akkar", nameAr: "عكار", code: "AKK" },
+      { nameEn: "Bekaa", nameAr: "البقاع", code: "BEK" },
+      { nameEn: "Baalbek-Hermel", nameAr: "بعلبك - الهرمل", code: "BH" },
+      { nameEn: "South", nameAr: "الجنوب", code: "SOU" },
+      { nameEn: "El Nabatieh", nameAr: "النبطية", code: "NAB" },
+    ];
+
+    const govIds: Record<string, any> = {};
+    for (const g of govs) {
+      govIds[g.code] = await ctx.db.insert("governorates", g);
+    }
+
+    const partners = [
+      { name: "Lebanese Red Cross", acronym: "LRC", type: "Gov" },
+      { name: "UNHCR Lebanon", acronym: "UNHCR", type: "UN" },
+      { name: "International Medical Corps", acronym: "IMC", type: "INGO" },
+      { name: "UNICEF Lebanon", acronym: "UNICEF", type: "UN" },
+      { name: "World Food Programme", acronym: "WFP", type: "UN" },
+    ];
+
+    for (const p of partners) {
+      await ctx.db.insert("partners", p);
+    }
+
+    return "Seeding completed successfully";
+  },
+});

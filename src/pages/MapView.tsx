@@ -2,16 +2,15 @@ import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Layers, MapPin, AlertTriangle, Crosshair } from "lucide-react";
+import { Layers, AlertTriangle, Crosshair } from "lucide-react";
 
 export default function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const facilities = useQuery(api.facilities.getFacilities, {});
-  const dangerZones = useQuery(api.mapping.getDangerZones);
 
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -35,7 +34,7 @@ export default function MapView() {
     if (!map.current || !facilities) return;
 
     // Add markers for facilities
-    facilities.forEach((f) => {
+    facilities.forEach((f: any) => {
       const el = document.createElement("div");
       el.className = "marker";
       el.style.backgroundColor = f.type === "Shelter" ? "#3b82f6" : f.type === "PHCC" ? "#10b981" : "#ef4444";
@@ -124,7 +123,7 @@ export default function MapView() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y">
-                {facilities?.slice(0, 5).map(f => (
+                {facilities?.slice(0, 5).map((f: any) => (
                   <div key={f._id} className="p-3 text-sm hover:bg-slate-50 cursor-pointer">
                     <div className="font-medium">{f.name}</div>
                     <div className="text-xs text-muted-foreground">{f.type} • {f.status}</div>
